@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Bug Fixes
+
+* The `crypto_nonexistent` error no longer occurs in `--disable-native-automation` mode when a page requires a secure context. TestCafe now proxies such pages over HTTPS by default. ([#8391](https://github.com/DevExpress/testcafe/issues/8391))
+
 ## v3.7.2 (2025-02-18)
 
 ### Bug Fixes

@@ -131,6 +131,19 @@ describe('TestCafe factory function', function () {
             });
     });
 
+    it('Should enable HTTPS when native automation is disabled', async () => {
+        await createTestCafe({
+            hostname:                'localhost',
+            port1:                   1338,
+            port2:                   1339,
+            disableNativeAutomation: true,
+        }).then(tc => {
+            testCafe = tc;
+        });
+
+        expect(testCafe.configuration.startOptions.ssl).eql(selfSignedCertificate);
+    });
+
     describe('Custom Testcafe Config Path', () => {
         it('Reverts back to default when not specified', () => {
             const defaultConfigJSONFile = '.testcaferc.json';

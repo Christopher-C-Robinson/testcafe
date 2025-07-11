@@ -197,6 +197,9 @@ export default class TestCafeConfiguration extends Configuration {
     }
 
     private async _normalizeOptionsAfterLoad (): Promise<void> {
+        if (this.getOption(OPTION_NAMES.disableNativeAutomation) && !this._options[OPTION_NAMES.ssl])
+            this._options[OPTION_NAMES.ssl] = { value: selfSignedCertificate, source: OptionSource.Configuration } as any;
+
         await this._prepareSslOptions();
         this._prepareInitFlags();
         this._prepareFilterFn();
@@ -276,9 +279,6 @@ export default class TestCafeConfiguration extends Configuration {
         this._ensureOptionWithValue(OPTION_NAMES.disableNativeAutomation, DEFAULT_DISABLE_NATIVE_AUTOMATION, OptionSource.Configuration);
         this._ensureOptionWithValue(OPTION_NAMES.experimentalMultipleWindows, DEFAULT_EXPERIMENTAL_MULTIPLE_WINDOWS, OptionSource.Configuration);
         this._ensureOptionWithValue(OPTION_NAMES.disableCrossDomain, DEFAULT_DISABLE_CROSS_DOMAIN, OptionSource.Configuration);
-
-        if (this.getOption(OPTION_NAMES.disableNativeAutomation) && !this._options[OPTION_NAMES.ssl])
-            this._options[OPTION_NAMES.ssl] = { value: selfSignedCertificate, source: OptionSource.Configuration } as any;
 
         this._ensureScreenshotOptions();
         this._ensureSkipJsOptions();

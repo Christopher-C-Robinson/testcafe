@@ -2,6 +2,7 @@ import Configuration from './configuration-base';
 import { castArray, flatten } from 'lodash';
 import { getGrepOptions, getSSLOptions } from '../utils/get-options';
 import OPTION_NAMES from './option-names';
+import selfSignedCertificate from 'openssl-self-signed-certificate';
 import getFilterFn from '../utils/get-filter-fn';
 import prepareReporters from '../utils/prepare-reporters';
 import { getConcatenatedValuesString, getPluralSuffix } from '../utils/string';
@@ -152,11 +153,16 @@ export default class TestCafeConfiguration extends Configuration {
     }
 
     public get startOptions (): TestCafeStartOptions {
+        let sslOption: object | undefined = this.getOption(OPTION_NAMES.ssl);
+
+        if (!sslOption && this.getOption(OPTION_NAMES.disableNativeAutomation))
+            sslOption = selfSignedCertificate;
+
         return {
             hostname:           this.getOption(OPTION_NAMES.hostname),
             port1:              this.getOption(OPTION_NAMES.port1),
             port2:              this.getOption(OPTION_NAMES.port2),
-            ssl:                this.getOption(OPTION_NAMES.ssl),
+            ssl:                sslOption,
             developmentMode:    this.getOption(OPTION_NAMES.developmentMode),
             retryTestPages:     this.getOption(OPTION_NAMES.retryTestPages),
             cache:              this.getOption(OPTION_NAMES.cache),

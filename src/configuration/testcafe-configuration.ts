@@ -198,7 +198,7 @@ export default class TestCafeConfiguration extends Configuration {
 
     private async _normalizeOptionsAfterLoad (): Promise<void> {
         if (this.getOption(OPTION_NAMES.disableNativeAutomation) && !this._options[OPTION_NAMES.ssl])
-            this._options[OPTION_NAMES.ssl] = { value: selfSignedCertificate, source: OptionSource.Configuration } as any;
+            this._options[OPTION_NAMES.ssl] = { value: selfSignedCertificate(), source: OptionSource.Configuration } as any;
 
         await this._prepareSslOptions();
         this._prepareInitFlags();

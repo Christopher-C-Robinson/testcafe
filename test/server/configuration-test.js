@@ -505,6 +505,20 @@ describe('TestCafeConfiguration', function () {
 
                     expect(configuration.getOption('hostname')).eql('123.456.789');
                 });
+
+                it('Native automation is disabled/all browsers are local/hostname is unset', async () => {
+                    await configuration.init();
+                    await configuration.calculateHostname({ nativeAutomation: false, allBrowsersLocal: true });
+
+                    expect(configuration.getOption('hostname')).eql('localhost');
+                });
+
+                it('Native automation is disabled/all browsers are local/hostname is set', async () => {
+                    await configuration.init({ hostname: '123.456.789' });
+                    await configuration.calculateHostname({ nativeAutomation: false, allBrowsersLocal: true });
+
+                    expect(configuration.getOption('hostname')).eql('123.456.789');
+                });
             });
         });
 

@@ -31,6 +31,15 @@ const createJSONConfig = (filePath, options) => {
     fs.writeFileSync(filePath, JSON.stringify(options));
 };
 
+const normalizePathForDel = filePath => filePath.replace(/\\/g, '/');
+
+const removeDefaultConfigFiles = async configuration => {
+    if (!configuration)
+        return;
+
+    await del(configuration.defaultPaths.map(normalizePathForDel), { force: true });
+};
+
 const createJsConfig = (filePath, options) => {
     options = options || {};
     fs.writeFileSync(filePath, `module.exports = ${JSON.stringify(options)}`);
@@ -63,7 +72,7 @@ describe('TestCafeConfiguration', function () {
     });
 
     afterEach(async () => {
-        await del(testCafeConfiguration.defaultPaths);
+        await removeDefaultConfigFiles(testCafeConfiguration);
 
         consoleWrapper.unwrap();
         consoleWrapper.messages.clear();
@@ -475,7 +484,7 @@ describe('TestCafeConfiguration', function () {
                 beforeEach(async () => {
                     configuration = new TestCafeConfiguration();
 
-                    await del(configuration.defaultPaths);
+                    await removeDefaultConfigFiles(configuration);
                 });
 
                 it('Native automation is enabled/hostname is unset', async () => {
@@ -668,7 +677,7 @@ describe('TestCafeConfiguration', function () {
         });
 
         after(async () => {
-            await del(configuration.defaultPaths);
+            await removeDefaultConfigFiles(configuration);
         });
 
         it('Should success create configuration with incorrect browser value', () => {
@@ -936,7 +945,7 @@ describe('TypeScriptConfiguration', function () {
         let configuration;
 
         afterEach(async () => {
-            await del(configuration.defaultPaths);
+            await removeDefaultConfigFiles(configuration);
         });
 
         it('Custom config path is used', () => {

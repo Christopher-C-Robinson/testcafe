@@ -9,6 +9,7 @@
 <script>
     document.getElementById('second-page-btn').addEventListener('click', function () {
         window.secondPageBtnClickCount = (window.secondPageBtnClickCount || 0) + 1;
+        this.textContent              = 'clicked';
     });
 </script>
 </body>

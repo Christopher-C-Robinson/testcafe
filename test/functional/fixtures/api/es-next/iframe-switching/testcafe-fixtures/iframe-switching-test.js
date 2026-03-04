@@ -132,28 +132,32 @@ test('Remove an iframe during execution', async t => {
 test('Click in a removed iframe', async t => {
     await t
         .switchToIframe('#iframe')
-        .wait(500)
         .click('#remove-from-parent-btn')
-        .wait(500)
         .click('#btn');
 });
 
 test('Click in an iframe with redirect', async t => {
+    const getSecondPageBtnClickCount       = ClientFunction(() => window.secondPageBtnClickCount);
+    const getNestedSecondPageBtnClickCount = ClientFunction(() => window.nestedSecondPageBtnClickCount);
+
     await t
         .switchToIframe('#iframe')
         .switchToIframe('#iframe')
         .click('#link')
-        .wait(500)
-        .click('#nested-second-page-btn')
-        .expect(Selector('#nested-second-page-btn').innerText).eql('clicked');
+        .click('#nested-second-page-btn');
+
+    const nestedSecondPageBtnClickCount = await getNestedSecondPageBtnClickCount();
 
     await t
         .switchToMainWindow()
         .switchToIframe('#iframe')
         .click('#link')
-        .wait(500)
-        .click('#second-page-btn')
-        .expect(Selector('#second-page-btn').innerText).eql('clicked');
+        .click('#second-page-btn');
+
+    const secondPageBtnClickCount = await getSecondPageBtnClickCount();
+
+    expect(nestedSecondPageBtnClickCount).eql(1);
+    expect(secondPageBtnClickCount).eql(1);
 });
 
 test('Reload the main page from an iframe', async t => {
@@ -204,12 +208,14 @@ test('Click in an iframe without src', async t => {
 });
 
 test('Click in a cross-domain iframe with redirect', async t => {
+    const getSecondPageBtnClickCount = ClientFunction(() => window.secondPageBtnClickCount);
+
     await t
         .switchToIframe('#cross-domain-iframe')
         .click('#link')
-        .wait(500)
-        .click('#second-page-btn')
-        .expect(Selector('#second-page-btn').innerText).eql('clicked');
+        .click('#second-page-btn');
+
+    const secondPageBtnClickCount = await getSecondPageBtnClickCount();
 
     await t
         .switchToMainWindow()
@@ -218,6 +224,7 @@ test('Click in a cross-domain iframe with redirect', async t => {
     const btnClickCount = await getBtnClickCount();
 
     expect(btnClickCount).eql(1);
+    expect(secondPageBtnClickCount).eql(1);
 });
 
 test("Click in a iframe that's loading too slowly", async t => {

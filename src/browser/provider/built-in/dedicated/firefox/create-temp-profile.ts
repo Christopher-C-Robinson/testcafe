@@ -1,6 +1,7 @@
 import path from 'path';
 import TempDirectory from '../../../../../utils/temp-directory';
 import { writeFile } from '../../../../../utils/promisified-functions';
+import isLocalhost from '../../../../../utils/is-localhost';
 import db from 'mime-db';
 
 function getMimeTypes (): string {
@@ -14,7 +15,7 @@ function getMimeTypes (): string {
     }).join(',');
 }
 
-async function generatePreferences (profileDir: string, { marionettePort, config }: { marionettePort: number; config: any }): Promise<void> {
+async function generatePreferences (profileDir: string, { marionettePort, config, proxyHostName }: { marionettePort: number; config: any; proxyHostName?: string }): Promise<void> {
     const prefsFileName = path.join(profileDir, 'user.js');
     const mimeTypes = getMimeTypes();
 
@@ -57,6 +58,9 @@ async function generatePreferences (profileDir: string, { marionettePort, config
         'user_pref("dom.timeout.background_budget_regeneration_rate", 1);',
         'user_pref("security.enterprise_roots.enabled", true);',
     ];
+
+    if (proxyHostName && !isLocalhost(proxyHostName))
+        prefs.push(`user_pref("dom.securecontext.allowlist", "${proxyHostName}");`);
 
     if (marionettePort) {
         prefs = prefs.concat([

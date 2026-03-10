@@ -18,7 +18,8 @@ const getCommonPath                    = require('../../lib/utils/get-common-pat
 const resolvePathRelativelyCwd         = require('../../lib/utils/resolve-path-relatively-cwd');
 const getFilterFn                      = require('../../lib/utils/get-filter-fn');
 const prepareReporters                 = require('../../lib/utils/prepare-reporters');
-const createTempProfile                = require('../../lib/browser/provider/built-in/dedicated/chrome/create-temp-profile');
+const createChromeTempProfile          = require('../../lib/browser/provider/built-in/dedicated/chrome/create-temp-profile');
+const createFirefoxTempProfile         = require('../../lib/browser/provider/built-in/dedicated/firefox/create-temp-profile');
 const { parseUserAgent }               = require('../../lib/utils/parse-user-agent');
 const diff                             = require('../../lib/utils/diff');
 const { generateScreenshotMark }       = require('../../lib/screenshots/utils');
@@ -643,7 +644,7 @@ describe('Utils', () => {
         });
 
         it("Without 'disableMultipleWindows' option", async () => {
-            const tempDir     = await createTempProfile('testhost', false);
+            const tempDir     = await createChromeTempProfile('testhost', false);
             const profileFile = path.join(tempDir.path, 'Default', 'Preferences');
             const preferences = JSON.parse(fs.readFileSync(profileFile));
 
@@ -651,11 +652,45 @@ describe('Utils', () => {
         });
 
         it("With 'disableMultipleWindows' option", async () => {
-            const tempDir     = await createTempProfile('testhost', true);
+            const tempDir     = await createChromeTempProfile('testhost', true);
             const profileFile = path.join(tempDir.path, 'Default', 'Preferences');
             const preferences = JSON.parse(fs.readFileSync(profileFile));
 
             expect(preferences.profile.content_settings.exceptions.popups).to.be.undefined;
+        });
+    });
+
+    describe('Create temporary profile for the Firefox browser', () => {
+        const TMP_ROOT     = resolvePathRelativelyCwd('__tmp__');
+        const savedTmpRoot = TempDirectory.TEMP_DIRECTORIES_ROOT;
+
+        beforeEach(() => {
+            TempDirectory.TEMP_DIRECTORIES_ROOT = TMP_ROOT;
+
+            return del(TMP_ROOT);
+        });
+
+        afterEach(() => {
+            TempDirectory.TEMP_DIRECTORIES_ROOT = savedTmpRoot;
+
+            return del(TMP_ROOT);
+        });
+
+        it('Should trust the proxy hostname for secure-context APIs', async () => {
+            const proxyHostName = 'proxy.example.com';
+            const tempDir       = await createFirefoxTempProfile({ config: {}, proxyHostName });
+            const profileFile = path.join(tempDir.path, 'user.js');
+            const preferences = fs.readFileSync(profileFile, 'utf8');
+
+            expect(preferences).contains(`user_pref("dom.securecontext.allowlist", "${proxyHostName}");`);
+        });
+
+        it('Should not add a secure-context allowlist entry for localhost', async () => {
+            const tempDir     = await createFirefoxTempProfile({ config: {}, proxyHostName: 'localhost' });
+            const profileFile = path.join(tempDir.path, 'user.js');
+            const preferences = fs.readFileSync(profileFile, 'utf8');
+
+            expect(preferences).not.contains('dom.securecontext.allowlist');
         });
     });
 

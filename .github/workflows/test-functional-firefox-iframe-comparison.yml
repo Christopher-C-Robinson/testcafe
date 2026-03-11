@@ -1,0 +1,159 @@
+name: Firefox Iframe Sampling Comparison
+
+run-name: >-
+  Firefox iframe sampling: ${{ github.event.inputs.label_a }} vs
+  ${{ github.event.inputs.label_b }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      sha_a:
+        description: Commit A SHA or ref
+        required: true
+        default: master
+      label_a:
+        description: Short label for commit A
+        required: false
+        default: patch
+      sha_b:
+        description: Commit B SHA or ref
+        required: true
+      label_b:
+        description: Short label for commit B
+        required: false
+        default: baseline
+      run_count:
+        description: Number of runs per test case
+        required: false
+        default: '10'
+
+jobs:
+  test-a:
+    name: "[${{ github.event.inputs.label_a }}] ${{ github.event.inputs.sha_a }}"
+    runs-on: ubuntu-latest
+    env:
+      TESTING_ENVIRONMENT: local-headless-firefox
+      RETRY_FAILED_TESTS: 'false'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.sha_a }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 16
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npx gulp fast-build
+
+      - name: Sample cross-domain iframe
+        shell: bash
+        timeout-minutes: 50
+        run: |
+          set +e
+          PASS=0
+          FAIL=0
+          COUNT='${{ github.event.inputs.run_count }}'
+          for i in $(seq 1 "$COUNT"); do
+            echo "--- cross-domain run $i / $COUNT ---"
+            if node node_modules/mocha/bin/mocha \
+              test/functional/setup.js \
+              test/functional/fixtures/api/es-next/iframe-switching/test.js \
+              --grep 'Should work in a cross-domain iframe' \
+              --timeout 180000; then
+              PASS=$((PASS + 1))
+            else
+              FAIL=$((FAIL + 1))
+            fi
+          done
+          echo "RESULT cross-domain iframe: $PASS / $COUNT passed"
+
+      - name: Sample srcdoc iframe
+        shell: bash
+        timeout-minutes: 50
+        run: |
+          set +e
+          PASS=0
+          FAIL=0
+          COUNT='${{ github.event.inputs.run_count }}'
+          for i in $(seq 1 "$COUNT"); do
+            echo "--- srcdoc run $i / $COUNT ---"
+            if node node_modules/mocha/bin/mocha \
+              test/functional/setup.js \
+              test/functional/fixtures/api/es-next/iframe-switching/test.js \
+              --grep 'Should work in an iframe with the srcdoc attribute' \
+              --timeout 180000; then
+              PASS=$((PASS + 1))
+            else
+              FAIL=$((FAIL + 1))
+            fi
+          done
+          echo "RESULT srcdoc iframe: $PASS / $COUNT passed"
+
+  test-b:
+    name: "[${{ github.event.inputs.label_b }}] ${{ github.event.inputs.sha_b }}"
+    runs-on: ubuntu-latest
+    env:
+      TESTING_ENVIRONMENT: local-headless-firefox
+      RETRY_FAILED_TESTS: 'false'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.sha_b }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 16
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npx gulp fast-build
+
+      - name: Sample cross-domain iframe
+        shell: bash
+        timeout-minutes: 50
+        run: |
+          set +e
+          PASS=0
+          FAIL=0
+          COUNT='${{ github.event.inputs.run_count }}'
+          for i in $(seq 1 "$COUNT"); do
+            echo "--- cross-domain run $i / $COUNT ---"
+            if node node_modules/mocha/bin/mocha \
+              test/functional/setup.js \
+              test/functional/fixtures/api/es-next/iframe-switching/test.js \
+              --grep 'Should work in a cross-domain iframe' \
+              --timeout 180000; then
+              PASS=$((PASS + 1))
+            else
+              FAIL=$((FAIL + 1))
+            fi
+          done
+          echo "RESULT cross-domain iframe: $PASS / $COUNT passed"
+
+      - name: Sample srcdoc iframe
+        shell: bash
+        timeout-minutes: 50
+        run: |
+          set +e
+          PASS=0
+          FAIL=0
+          COUNT='${{ github.event.inputs.run_count }}'
+          for i in $(seq 1 "$COUNT"); do
+            echo "--- srcdoc run $i / $COUNT ---"
+            if node node_modules/mocha/bin/mocha \
+              test/functional/setup.js \
+              test/functional/fixtures/api/es-next/iframe-switching/test.js \
+              --grep 'Should work in an iframe with the srcdoc attribute' \
+              --timeout 180000; then
+              PASS=$((PASS + 1))
+            else
+              FAIL=$((FAIL + 1))
+            fi
+          done
+          echo "RESULT srcdoc iframe: $PASS / $COUNT passed"

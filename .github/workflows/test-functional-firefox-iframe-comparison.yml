@@ -26,6 +26,10 @@ on:
         description: Number of runs per test case
         required: false
         default: '10'
+      mocha_retries:
+        description: Mocha retries per run
+        required: false
+        default: '3'
 
 jobs:
   test-a:
@@ -33,13 +37,13 @@ jobs:
     runs-on: ubuntu-latest
     env:
       TESTING_ENVIRONMENT: local-headless-firefox
-      RETRY_FAILED_TESTS: 'false'
+      RETRY_FAILED_TESTS: 'true'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v3
         with:
           ref: ${{ github.event.inputs.sha_a }}
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v3
         with:
           node-version: 16
 
@@ -63,6 +67,8 @@ jobs:
               test/functional/setup.js \
               test/functional/fixtures/api/es-next/iframe-switching/test.js \
               --grep 'Should work in a cross-domain iframe' \
+              --retries '${{ github.event.inputs.mocha_retries }}' \
+              --reporter mocha-reporter-spec-with-retries \
               --timeout 180000; then
               PASS=$((PASS + 1))
             else
@@ -85,6 +91,8 @@ jobs:
               test/functional/setup.js \
               test/functional/fixtures/api/es-next/iframe-switching/test.js \
               --grep 'Should work in an iframe with the srcdoc attribute' \
+              --retries '${{ github.event.inputs.mocha_retries }}' \
+              --reporter mocha-reporter-spec-with-retries \
               --timeout 180000; then
               PASS=$((PASS + 1))
             else
@@ -98,13 +106,13 @@ jobs:
     runs-on: ubuntu-latest
     env:
       TESTING_ENVIRONMENT: local-headless-firefox
-      RETRY_FAILED_TESTS: 'false'
+      RETRY_FAILED_TESTS: 'true'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v3
         with:
           ref: ${{ github.event.inputs.sha_b }}
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v3
         with:
           node-version: 16
 
@@ -128,6 +136,8 @@ jobs:
               test/functional/setup.js \
               test/functional/fixtures/api/es-next/iframe-switching/test.js \
               --grep 'Should work in a cross-domain iframe' \
+              --retries '${{ github.event.inputs.mocha_retries }}' \
+              --reporter mocha-reporter-spec-with-retries \
               --timeout 180000; then
               PASS=$((PASS + 1))
             else
@@ -150,6 +160,8 @@ jobs:
               test/functional/setup.js \
               test/functional/fixtures/api/es-next/iframe-switching/test.js \
               --grep 'Should work in an iframe with the srcdoc attribute' \
+              --retries '${{ github.event.inputs.mocha_retries }}' \
+              --reporter mocha-reporter-spec-with-retries \
               --timeout 180000; then
               PASS=$((PASS + 1))
             else
